@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <title>Expectativas de tasa del BanRep</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      /* Réplica visual del Space «Expectativas de tasa del BanRep» (tema terminal oscuro). */
+      :root{
+        color-scheme:dark;
+        --bg:#0b0e13;
+        --surface:#12161d;
+        --surface-alt:#171c25;
+        --text:#e8ecf1;
+        --dim:#8b94a3;
+        --border:#232a35;
+        --accent:#4ade80;
+        --down:#f87171;
+        --radius:10px;
+      }
+      *{ box-sizing:border-box; }
+      html{ -webkit-text-size-adjust:100%; }
+      body{
+        margin:0; min-height:100vh;
+        background:var(--bg); color:var(--text);
+        font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size:15px; line-height:1.5;
+      }
+      button{ min-height:2rem; font-family:inherit; }
+      a{ color:var(--accent); }
+      .wrap{ max-width:1152px; margin:0 auto; padding:0 16px 40px; }
+
+      /* ---------- Barra superior ---------- */
+      .topbar{
+        display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; padding-top:16px;
+      }
+      .topbar h1{
+        font-size:16px; font-weight:700; letter-spacing:.02em; margin:0;
+      }
+      .topbar h1 .brand{ color:var(--accent); }
+      .topbar .actions{ margin-left:auto; display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+      .btn{
+        border-radius:999px; padding:6px 16px; font-size:14px; font-weight:600; cursor:pointer;
+        background:transparent; color:var(--text); border:1px solid var(--border);
+      }
+      .btn:active{ transform:translateY(1px); }
+      .btn-accent{
+        color:var(--accent); border:1px solid rgba(74,222,128,.5); background:rgba(74,222,128,.10);
+      }
+      .action-note{ margin:8px 0 0; font-size:12px; color:var(--dim); }
+
+      /* ---------- Fila de estado ---------- */
+      .status{
+        margin:12px 0 0; display:grid; grid-template-columns:1fr; gap:8px 24px;
+        font-size:12px; line-height:1.6;
+      }
+      @media (min-width:640px){ .status{ grid-template-columns:repeat(3, 1fr); } }
+      .status dt{
+        font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--dim);
+      }
+      .status dd{ margin:2px 0 0; }
+      .status .cap{ text-transform:capitalize; }
+      .status a{ text-decoration:underline; }
+
+      /* ---------- Tarjetas ---------- */
+      .cards{ margin-top:16px; display:grid; grid-template-columns:1fr; gap:12px; }
+      @media (min-width:640px){ .cards{ grid-template-columns:repeat(2, 1fr); } }
+      @media (min-width:1280px){ .cards{ grid-template-columns:repeat(4, 1fr); } }
+      .card{
+        border:1px solid var(--border); border-radius:var(--radius);
+        background:var(--surface); padding:12px 16px;
+      }
+      .card .label{
+        font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+        color:var(--dim); margin:0;
+      }
+      .card .main{ margin-top:6px; }
+      .card .foot{ margin-top:6px; font-size:12px; line-height:1.6; color:var(--dim); }
+      .big{ font-size:36px; font-weight:800; line-height:40px; letter-spacing:-.02em; }
+      .next-date{ font-size:20px; font-weight:700; line-height:28px; text-transform:capitalize; }
+      .countdown{ margin-top:4px; font-size:24px; font-weight:800; line-height:32px; color:var(--accent); font-variant-numeric:tabular-nums; }
+      .countdown.pending{ color:var(--down); font-size:20px; line-height:28px; }
+      .next-delta{ margin-left:8px; font-size:18px; font-weight:700; }
+
+      /* ---------- Paneles y títulos de sección ---------- */
+      .panel{
+        border:1px solid var(--border); border-radius:var(--radius); background:var(--surface);
+      }
+      h2.sec{
+        font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+        color:var(--dim); margin:0;
+      }
+
+      /* ---------- Gráfica ---------- */
+      .chart-panel{ margin-top:24px; padding:16px 12px; }
+      .chart-head{
+        display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
+        gap:8px; padding:0 4px;
+      }
+      .chart-legend{ font-size:11px; line-height:1.6; color:var(--dim); margin:0; }
+      .chart-legend .g{ color:var(--accent); }
+      .chart-legend .r{ color:var(--down); }
+      #chart{ margin-top:8px; }
+      #chart svg{ display:block; width:100%; height:auto; }
+
+      /* ---------- Tabla ---------- */
+      .table-sec{ margin-top:24px; }
+      .tablebox{
+        margin-top:12px; overflow:hidden;
+        border:1px solid var(--border); border-radius:var(--radius);
+      }
+      .trow{
+        display:grid; grid-template-columns:1fr 1fr; gap:8px 12px;
+        padding:12px 16px; background:var(--surface);
+        border-bottom:1px solid var(--border);
+      }
+      .trow:last-child{ border-bottom:none; }
+      .thead-row{ display:none; }
+      @media (min-width:768px){
+        .trow{ grid-template-columns:1.2fr 1fr 1fr 1fr; align-items:center; }
+        .thead-row{
+          display:grid; background:var(--surface-alt);
+          font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--dim);
+          padding:8px 16px;
+        }
+      }
+      .trow .r{ text-align:right; }
+      .m-label{ font-size:14px; font-weight:600; text-transform:capitalize; }
+      .m-kind{ font-size:11px; color:var(--dim); margin-top:1px; }
+      .rate{ font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
+      @media (min-width:768px){ .rate{ font-size:16px; } }
+      .delta{ font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; }
+      .delta .pre{ color:var(--dim); font-weight:400; }
+      @media (min-width:768px){ .delta .pre{ display:none; } }
+      .table-note{ margin:8px 0 0; font-size:11px; line-height:1.6; color:var(--dim); }
+
+      /* ---------- Fuente y metodología ---------- */
+      .method{ margin-top:32px; padding:16px; }
+      .method .body{ margin-top:8px; font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:14px; line-height:1.65; }
+      .method .body p{ margin:0 0 8px; }
+      .method .body p:last-child{ margin-bottom:0; }
+      .method a{ text-decoration:underline; }
+      .method .dim{ color:var(--dim); }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+
+      <!-- Barra superior -->
+      <div class="topbar">
+        <h1>EXPECTATIVAS DE TASA DEL <span class="brand">BANREP</span></h1>
+        <div class="actions">
+          <button class="btn" id="btn-download" type="button">Descargar HTML</button>
+          <button class="btn btn-accent" id="btn-refresh" type="button">Actualizar</button>
+        </div>
+      </div>
+      <p class="action-note" id="download-note" role="status" hidden></p>
+
+      <!-- Estado: edición / última decisión / última verificación -->
+      <dl class="status">
+        <div>
+          <dt>Edición de la encuesta</dt>
+          <dd>Encuesta Mensual de Expectativas — noviembre de 2026 · publicada el 18 de nov de 2026 · <a href="https://www.banrep.gov.co/es/resultados-mensuales-expectativas-analistas-economicos" target="_blank" rel="noopener">Ver la edición utilizada</a></dd>
+        </div>
+        <div>
+          <dt>Última decisión oficial</dt>
+          <dd><span class="cap">30 de oct de 2026</span> · Última decisión (30 oct 2026): mantener en 12,25% — votación 4 por mantener, 3 por subir a 12,50%.</dd>
+        </div>
+        <div>
+          <dt>Última verificación del servidor</dt>
+          <dd>25 de nov de 2026, 2:56 p. m. · Decisión oficial registrada</dd>
+        </div>
+      </dl>
+
+      <!-- Tarjetas -->
+      <div class="cards">
+        <section class="card">
+          <p class="label">Tasa actual</p>
+          <div class="main"><span class="big">12,25%</span></div>
+          <div class="foot">Vigente desde el 3 de nov de 2026.</div>
+        </section>
+
+        <section class="card">
+          <p class="label">Próxima decisión</p>
+          <div class="main">
+            <span class="next-date">viernes, 18 de diciembre de 2026</span>
+            <div class="countdown" id="countdown" role="timer" aria-label="Cuenta regresiva a la próxima decisión">—</div>
+          </div>
+          <div class="foot" id="next-foot">Reunión de la Junta Directiva · anuncio desde la 1:00 p. m.</div>
+        </section>
+
+        <section class="card">
+          <p class="label">Próxima reunión · esperada</p>
+          <div class="main"><span class="big">12,25%</span><span class="next-delta" style="color:var(--dim)">0 pb</span></div>
+          <div class="foot">El consenso no espera movimiento en esta reunión.</div>
+        </section>
+
+        <section class="card">
+          <p class="label">Panorama 12 meses</p>
+          <div class="main"><span class="big" style="color:var(--down)">−125 pb</span></div>
+          <div class="foot">Tasa esperada hacia 17 de dic de 2027: 11,00% según la senda del consenso.</div>
+        </section>
+      </div>
+
+      <!-- Gráfica -->
+      <section class="panel chart-panel">
+        <div class="chart-head">
+          <h2 class="sec">Senda esperada de la tasa</h2>
+          <p class="chart-legend"><span class="g">●</span> mediana publicada · ○ estimado · línea continua: entre medianas publicadas · línea punteada: tramo estimado · <span class="r">- -</span> tasa vigente</p>
+        </div>
+        <div id="chart"></div>
+      </section>
+
+      <!-- Tabla -->
+      <section class="table-sec">
+        <h2 class="sec">Cambios esperados por reunión o periodo</h2>
+        <div class="tablebox">
+          <div class="trow thead-row" aria-hidden="true">
+            <span>Reunión o periodo</span>
+            <span class="r">Tasa mediana o estimada</span>
+            <span class="r">Cambio vs. punto anterior (pb)</span>
+            <span class="r">Cambio vs. tasa vigente (pb)</span>
+          </div>
+          <div id="rows"></div>
+        </div>
+        <p class="table-note">Los cambios son diferencias directas entre tasas: de 11,50% a 11,00% hay −50 pb; si dos puntos tienen la misma tasa, el cambio es 0 pb. La primera fila se compara contra la tasa vigente.</p>
+      </section>
+
+      <!-- Fuente y metodología -->
+      <section class="panel method">
+        <h2 class="sec">Fuente y metodología</h2>
+        <div class="body">
+          <p>La senda se construye con el <strong>consenso de analistas</strong> de la Encuesta Mensual de Expectativas (EME) del Banco de la República — <a href="https://www.banrep.gov.co/es/resultados-mensuales-expectativas-analistas-economicos" target="_blank" rel="noopener">resultados oficiales de la edición utilizada</a>. Es la ruta gratuita: en Colombia la curva swap IBR/OIS en vivo la calcula Precia y solo se consigue en terminales pagas (Bloomberg, LSEG), así que aquí no hay precios de mercado sino medianas de encuesta.</p>
+          <p>Los puntos marcados como <em>mediana publicada</em> son valores que la EME publica para ese horizonte exacto y se conservan tal cual. Cuando un punto de la senda cae entre dos medianas publicadas y la encuesta no trae valor para ese horizonte, el punto es un <strong>estimado</strong>: se interpola linealmente en el tiempo entre las dos medianas vecinas y se redondea al múltiplo de 5 pb más cercano. La regla queda documentada aquí y el punto va etiquetado como «Estimado» en la tabla y en la gráfica.</p>
+          <p>La tasa vigente y la última decisión oficial se verifican contra los comunicados de la Junta Directiva en banrep.gov.co; una decisión entre encuestas actualiza la tasa vigente y todos los cambios en puntos básicos sin alterar las medianas publicadas. Si una lectura de fuentes falla, la página conserva la última edición válida y lo indica arriba con su fecha. Cuando la edición de la EME publica los percentiles 10 y 90 de las respuestas, se muestran como banda de dispersión en la gráfica.</p>
+          <p>Fuentes: Encuesta Mensual de Expectativas de Analistas Económicos del BanRep (noviembre de 2026, medianas) e Informe de Política Monetaria de octubre de 2026, cuya senda del equipo técnico va alineada con la encuesta (alrededor de 12,5%) hasta mediados de 2027. Itaú (19 nov 2026) resume la encuesta igual — quieto en diciembre, +25 pb en marzo de 2027, cierre de 2027 en 11,0% — y la EOF de Fedesarrollo de noviembre también espera el cierre de 2026 en 12,25%. Las reuniones marcadas como ancla son medianas directas de la encuesta; las demás son una interpolación gradual entre anclas construida para esta página.</p>
+          <p class="dim">Fuentes: <a href="https://www.banrep.gov.co/es/resultados-mensuales-expectativas-analistas-economicos" target="_blank" rel="noopener">Banco de la República — Resultados mensuales de la EME</a> y <a href="https://www.banrep.gov.co/es/listado/2100" target="_blank" rel="noopener">Política monetaria</a> (tasa vigente, calendario de reuniones y decisiones de la Junta). Los datos se verifican una vez al mes, tras la publicación de cada nueva encuesta, o con el botón «Actualizar».</p>
+        </div>
+      </section>
+
+    </main>
+
+    <script>
+      // ============ DATOS — snapshot del Space, EME noviembre 2026 ============
+      var CURRENT_RATE = 12.25; // vigente desde el 3-nov-2026
+      // published: true = mediana publicada por la EME (ancla); false = Estimado
+      var MEETINGS = [
+        { iso: "2026-12-18", label: "18 dic 2026", rate: 12.25, published: true  },
+        { iso: "2027-01-29", label: "29 ene 2027", rate: 12.25, published: false },
+        { iso: "2027-03-31", label: "31 mar 2027", rate: 12.50, published: true  },
+        { iso: "2027-04-30", label: "30 abr 2027", rate: 12.50, published: false },
+        { iso: "2027-06-30", label: "30 jun 2027", rate: 12.25, published: false },
+        { iso: "2027-07-30", label: "30 jul 2027", rate: 12.00, published: true  },
+        { iso: "2027-09-30", label: "30 sep 2027", rate: 11.75, published: false },
+        { iso: "2027-10-29", label: "29 oct 2027", rate: 11.50, published: false },
+        { iso: "2027-12-17", label: "17 dic 2027", rate: 11.00, published: true  }
+      ];
+      // Instante de la decisión: anuncio del BanRep desde la 1:00 p. m. de Bogotá (UTC−5)
+      function meetingInstant(iso) {
+        var p = iso.split("-");
+        return Date.UTC(+p[0], +p[1] - 1, +p[2], 18, 0, 0);
+      }
+      var NEXT_DECISION = meetingInstant(MEETINGS[0].iso);
+
+      // ============ Formato es-CO: coma decimal ============
+      function fmtPct(x) { return x.toFixed(2).replace(".", ",") + "%"; }
+      function fmtBps(b) {
+        if (b === 0) return "0 pb";
+        return (b > 0 ? "+" : "−") + Math.abs(b) + " pb";
+      }
+      function bpsColor(b) { return b > 0 ? "var(--accent)" : (b < 0 ? "var(--down)" : "var(--dim)"); }
+
+      // ============ Tabla de cambios esperados (pb) ============
+      (function renderTable() {
+        var html = "";
+        var prev = CURRENT_RATE;
+        for (var i = 0; i < MEETINGS.length; i++) {
+          var m = MEETINGS[i];
+          var chgPrev = Math.round((m.rate - prev) * 100);
+          var chgCur = Math.round((m.rate - CURRENT_RATE) * 100);
+          prev = m.rate;
+          html += '<div class="trow">' +
+            '<div><div class="m-label">' + m.label + '</div>' +
+            '<div class="m-kind">' + (m.published ? "Mediana publicada por la EME" : "Estimado") + '</div></div>' +
+            '<div class="r"><span class="rate">' + fmtPct(m.rate) + '</span></div>' +
+            '<div class="r"><span class="delta" style="color:' + bpsColor(chgPrev) + '"><span class="pre">Vs. anterior: </span>' + fmtBps(chgPrev) + '</span></div>' +
+            '<div class="r"><span class="delta" style="color:' + bpsColor(chgCur) + '"><span class="pre">Vs. vigente: </span>' + fmtBps(chgCur) + '</span></div>' +
+          '</div>';
+        }
+        document.getElementById("rows").innerHTML = html;
+      })();
+
+      // ============ Gráfica de la senda (SVG, eje X con fechas reales) ============
+      (function buildChart() {
+        var W = 960, H = 256;
+        var mL = 64, mR = 16, mT = 8, mB = 26;
+        var plotW = W - mL - mR, plotH = H - mT - mB;
+
+        // Punto "hoy" (fecha de Bogotá) a la tasa vigente + las 9 reuniones
+        var todayIso = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit"
+        }).format(new Date());
+        var pts = [{ t: meetingInstant(todayIso), rate: CURRENT_RATE, kind: "hoy", label: "Hoy · tasa vigente" }];
+        for (var i = 0; i < MEETINGS.length; i++) {
+          pts.push({
+            t: meetingInstant(MEETINGS[i].iso), rate: MEETINGS[i].rate,
+            kind: MEETINGS[i].published ? "pub" : "est", label: MEETINGS[i].label
+          });
+        }
+
+        var t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+        function X(t) { return mL + (t - t0) / (t1 - t0) * plotW; }
+
+        // Rango vertical adaptado: (mín −0,30) a (máx +0,30), a cuartos de punto
+        var lo = Infinity, hi = -Infinity;
+        for (var q = 0; q < pts.length; q++) { lo = Math.min(lo, pts[q].rate); hi = Math.max(hi, pts[q].rate); }
+        var yMin = Math.floor((lo - 0.3) * 4) / 4, yMax = Math.ceil((hi + 0.3) * 4) / 4;
+        function Y(r) { return mT + (yMax - r) / (yMax - yMin) * plotH; }
+
+        var monthFmt = new Intl.DateTimeFormat("es-CO", { month: "short", year: "2-digit", timeZone: "America/Bogota" });
+        var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Gráfica de la senda esperada de la tasa de intervención">';
+        // Rejilla (horizontal y vertical, punteada)
+        for (var g = yMin; g <= yMax + 0.001; g += 0.5) {
+          var gy = Y(g);
+          s += '<line x1="' + mL + '" y1="' + gy + '" x2="' + (W - mR) + '" y2="' + gy + '" stroke="#232a35" stroke-width="1" stroke-dasharray="3 3"/>';
+          s += '<text x="' + (mL - 8) + '" y="' + (gy + 4) + '" fill="#8b94a3" font-size="11" text-anchor="end">' + g.toFixed(2).replace(".", ",") + '%</text>';
+        }
+        for (var v = 0; v < pts.length; v++) {
+          var vx = X(pts[v].t);
+          s += '<line x1="' + vx + '" y1="' + mT + '" x2="' + vx + '" y2="' + (H - mB) + '" stroke="#232a35" stroke-width="1" stroke-dasharray="3 3"/>';
+          var anch = v === pts.length - 1 ? "end" : "middle";
+          s += '<text x="' + vx + '" y="' + (H - 6) + '" fill="#8b94a3" font-size="11" text-anchor="' + anch + '">' + monthFmt.format(new Date(pts[v].t)) + '</text>';
+        }
+        // Tasa vigente: línea horizontal punteada roja
+        var cy = Y(CURRENT_RATE);
+        s += '<line x1="' + mL + '" y1="' + cy + '" x2="' + (W - mR) + '" y2="' + cy + '" stroke="#f87171" stroke-width="1" stroke-dasharray="6 4" opacity="0.7"/>';
+        // Tramos: continuo entre medianas publicadas; punteado si algún extremo es Estimado
+        for (var j = 1; j < pts.length; j++) {
+          var a = pts[j - 1], b = pts[j];
+          var est = a.kind === "est" || b.kind === "est";
+          s += '<line x1="' + X(a.t) + '" y1="' + Y(a.rate) + '" x2="' + X(b.t) + '" y2="' + Y(b.rate) +
+               '" stroke="#4ade80" stroke-width="2"' + (est ? ' stroke-dasharray="5 4" opacity="0.65"' : "") + '/>';
+        }
+        // Puntos: verde lleno = publicada; hueco = estimado
+        for (var k = 1; k < pts.length; k++) {
+          var p = pts[k], cx = X(p.t), py = Y(p.rate);
+          if (p.kind === "pub") {
+            s += '<circle cx="' + cx + '" cy="' + py + '" r="5" fill="#4ade80"><title>' + p.label + ' · ' + fmtPct(p.rate) + ' · Mediana publicada por la EME</title></circle>';
+          } else {
+            s += '<circle cx="' + cx + '" cy="' + py + '" r="4" fill="#12161d" stroke="#8b94a3" stroke-width="2"><title>' + p.label + ' · ' + fmtPct(p.rate) + ' · Estimado</title></circle>';
+          }
+        }
+        s += "</svg>";
+        document.getElementById("chart").innerHTML = s;
+      })();
+
+      // ============ Cuenta regresiva en vivo ============
+      (function countdown() {
+        var el = document.getElementById("countdown");
+        var foot = document.getElementById("next-foot");
+        function pad(n) { return (n < 10 ? "0" : "") + n; }
+        function tick() {
+          var diff = NEXT_DECISION - Date.now();
+          if (diff <= 0) {
+            el.textContent = "Pendiente de publicación";
+            el.classList.add("pending");
+            foot.textContent = "La hora prevista del anuncio ya pasó y el comunicado oficial aún no está registrado.";
+            return;
+          }
+          var sec = Math.floor(diff / 1000);
+          var d = Math.floor(sec / 86400);
+          var h = Math.floor(sec % 86400 / 3600);
+          var min = Math.floor(sec % 3600 / 60);
+          var s = sec % 60;
+          el.textContent = d > 0
+            ? d + "d " + pad(h) + "h " + pad(min) + "m " + pad(s) + "s"
+            : pad(h) + "h " + pad(min) + "m " + pad(s) + "s";
+        }
+        tick();
+        setInterval(tick, 1000);
+      })();
+
+      // ============ Botones de la barra superior ============
+      document.getElementById("btn-download").addEventListener("click", function () {
+        var code = "<!doctype html>\n" + document.documentElement.outerHTML;
+        var blob = new Blob([code], { type: "text/html;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "expectativas-tasa-banrep.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+        var note = document.getElementById("download-note");
+        note.textContent = "Se descargó una copia HTML autónoma con los datos que se ven en pantalla.";
+        note.hidden = false;
+      });
+      document.getElementById("btn-refresh").addEventListener("click", function () {
+        location.reload();
+      });
+    </script>
+  </body>
+</html>
